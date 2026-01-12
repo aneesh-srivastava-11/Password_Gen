@@ -14,10 +14,10 @@ export default function Home() {
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [copyMessage, setCopyMessage] = useState('');
 
   // Load history from Firebase
   useEffect(() => {
-    // Only attempt connection if config is valid (skipping in demo mode if keys missing)
     try {
       const q = query(collection(db, "passwords"), orderBy("createdAt", "desc"), limit(10));
       const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -32,7 +32,11 @@ export default function Home() {
   }, []);
 
   const handleGenerate = async () => {
+    // 🔒 Reset UI safely
     setLoading(true);
+    setGeneratedPassword('');
+    setCopyMessage('');
+
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -41,27 +45,50 @@ export default function Home() {
         },
         body: JSON.stringify({ length, ...options }),
       });
+
+      if (!res.ok) {
+        throw new Error("API request failed");
+      }
+
       const data = await res.json();
       setGeneratedPassword(data.password);
 
-      // Save to Firestore
-      try {
-        await addDoc(collection(db, "passwords"), {
-          password: data.password,
-          createdAt: new Date(),
-          type: "generated"
-        });
-      } catch (e) {
+      // Save to Firestore (non-blocking)
+      addDoc(collection(db, "passwords"), {
+        password: data.password,
+        createdAt: new Date(),
+        type: "generated"
+      }).catch(e => {
         console.warn("Could not save to DB (check config):", e);
-      }
+      });
+
     } catch (err) {
-      console.error(err);
+      console.error("Generation error:", err);
+    } finally {
+      setLoading(false); // 🔥 ALWAYS unlock the button
     }
-    setLoading(false);
   };
 
   const toggleOption = (key) => {
     setOptions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleCopy = async () => {
+    if (generatedPassword) {
+      try {
+        await navigator.clipboard.writeText(generatedPassword);
+        setCopyMessage('PASSWORD_COPIED');
+        setTimeout(() => setCopyMessage(''), 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    }
+  };
+
+  const handleClear = () => {
+    setGeneratedPassword('');
+    setCopyMessage('');
+    setLoading(false);
   };
 
   return (
@@ -83,7 +110,7 @@ export default function Home() {
               min="8"
               max="64"
               value={length}
-              onChange={(e) => setLength(e.target.value)}
+              onChange={(e) => setLength(parseInt(e.target.value))}
             />
           </div>
 
@@ -107,6 +134,21 @@ export default function Home() {
           <div className="result">
             {generatedPassword ? generatedPassword : <span style={{ opacity: 0.5 }}>AWAITING_INPUT...</span>}
           </div>
+          {generatedPassword && (
+            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+              <button className="btn-action" onClick={handleCopy}>
+                COPY_TO_CLIPBOARD
+              </button>
+              <button className="btn-action" onClick={handleClear}>
+                CLEAR_BUFFER
+              </button>
+            </div>
+          )}
+          {copyMessage && (
+            <div style={{ marginTop: '10px', color: '#00ff00', fontSize: '14px' }}>
+              &gt; {copyMessage}
+            </div>
+          )}
         </div>
 
         <div className="panel">

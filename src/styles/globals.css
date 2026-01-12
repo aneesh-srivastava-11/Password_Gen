@@ -28,13 +28,11 @@ body {
   top: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 0.2) 50%,
-    rgba(0, 0, 0, 0.2)
-  );
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0) 50%,
+      rgba(0, 0, 0, 0.2) 50%,
+      rgba(0, 0, 0, 0.2));
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 999;
@@ -152,6 +150,26 @@ input[type="range"]::-webkit-slider-runnable-track {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
+.btn-action {
+  flex: 1;
+  padding: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--text-main);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-action:hover {
+  background: var(--text-main);
+  color: var(--bg-color);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
 .result {
   margin-top: 2rem;
   padding: 1rem;
@@ -189,7 +207,15 @@ input[type="range"]::-webkit-slider-runnable-track {
 }
 
 @keyframes flicker {
-  0% { opacity: 0.97; }
-  50% { opacity: 1; }
-  100% { opacity: 0.98; }
+  0% {
+    opacity: 0.97;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.98;
+  }
 }
