@@ -95,6 +95,7 @@ export default function Home() {
     <>
       <Head>
         <title>HACKER_GEN_V1.0</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div className="scanline"></div>
       <div className="container crt-flicker">
